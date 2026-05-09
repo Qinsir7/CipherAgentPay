@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+cache/
+coverage/
+dist/
+frontend/dist/
+fhevmTemp/
+.env
+.env.local
+npm-debug.log*
