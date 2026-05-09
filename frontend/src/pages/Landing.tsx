@@ -47,42 +47,94 @@ export default function Landing() {
   return (
     <div className="landing">
       <section className="hero">
-        <div className="hero__inner">
-          <p className="hero__eyebrow">
-            <span className="dot" /> Live on Sepolia · Powered by Zama FHEVM
-          </p>
-          <h1 className="hero__title">
-            Give an AI agent a wallet,<br />
-            not a blank check.
-          </h1>
-          <p className="hero__lede">
-            CipherAgent Pay is the encrypted policy layer for autonomous agent treasuries.
-            Budgets and limits stay encrypted on-chain. Approvals are computed on ciphertext.
-            Only the right role ever decrypts.
-          </p>
-          <div className="hero__cta">
-            <Link to="/app" className="btn btn--primary">
-              Launch Studio <span aria-hidden="true">→</span>
-            </Link>
-            <Link to="/explorer" className="btn btn--ghost">
-              Live activity
-            </Link>
-          </div>
-          {contractAddress && (
-            <a
-              className="hero__contract"
-              href={`https://sepolia.etherscan.io/address/${contractAddress}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="hero__contract-label">Sepolia contract</span>
-              <code>{contractAddress}</code>
-              <span aria-hidden="true">↗</span>
-            </a>
-          )}
+        <div className="hero__aurora" aria-hidden="true">
+          <div className="hero__aurora-orb hero__aurora-orb--mint" />
+          <div className="hero__aurora-orb hero__aurora-orb--peach" />
+          <div className="hero__aurora-orb hero__aurora-orb--violet" />
         </div>
         <div className="hero__grid" aria-hidden="true" />
+
+        <div className="hero__inner">
+          <div className="hero__copy">
+            <p className="hero__eyebrow">
+              <span className="dot" /> Live on Sepolia · Powered by Zama FHEVM
+            </p>
+            <h1 className="hero__title">
+              Give an AI agent <em>a wallet</em>,
+              <br />
+              not a <em>blank&nbsp;check</em>.
+            </h1>
+            <p className="hero__lede">
+              CipherAgent Pay is the encrypted policy layer for autonomous agent treasuries.
+              Budgets and limits stay encrypted on-chain. Approvals are computed on ciphertext.
+              Only the right role ever decrypts.
+            </p>
+            <div className="hero__cta">
+              <Link to="/app" className="btn btn--primary">
+                Launch Studio <span aria-hidden="true">→</span>
+              </Link>
+              <Link to="/explorer" className="btn btn--ghost">
+                See live activity
+              </Link>
+            </div>
+            {contractAddress && (
+              <a
+                className="hero__contract"
+                href={`https://sepolia.etherscan.io/address/${contractAddress}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="hero__contract-label">Sepolia contract</span>
+                <code>{contractAddress}</code>
+                <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </div>
+
+          <aside className="hero__viz" aria-hidden="true">
+            <div className="viz__card viz__card--policy">
+              <span className="viz__chip">policy · encrypted</span>
+              <p className="viz__title">Quarterly cap</p>
+              <p className="viz__cipher">euint64 · 0x9f4a…c2e1</p>
+              <div className="viz__bar"><span style={{ width: "62%" }} /></div>
+              <p className="viz__meta">budget remaining · ciphertext</p>
+            </div>
+            <div className="viz__card viz__card--payment">
+              <span className="viz__chip viz__chip--warm">payment · evaluated</span>
+              <p className="viz__title">approved on ciphertext</p>
+              <p className="viz__cipher">silent reject if over cap</p>
+              <p className="viz__meta">amount stays encrypted on-chain</p>
+            </div>
+            <div className="viz__line" />
+          </aside>
+        </div>
       </section>
+
+      <div className="ticker" aria-hidden="true">
+        <div className="ticker__track">
+          {[
+            "FHE encrypted at rest, in motion, in compute",
+            "Live on Sepolia",
+            "0 leak guarantee on policy breach",
+            "Composable with ERC-7984",
+            "EIP-712 per-role userDecrypt",
+            "1-tx pause kill-switch",
+          ]
+            .concat([
+              "FHE encrypted at rest, in motion, in compute",
+              "Live on Sepolia",
+              "0 leak guarantee on policy breach",
+              "Composable with ERC-7984",
+              "EIP-712 per-role userDecrypt",
+              "1-tx pause kill-switch",
+            ])
+            .map((item, i) => (
+              <span key={i} className="ticker__item">
+                {item}
+              </span>
+            ))}
+        </div>
+      </div>
 
       <section className="why">
         <div className="why__inner">

@@ -189,4 +189,29 @@ export const cipherAgentPayAbi = [
     ],
     anonymous: false,
   },
+  {
+    type: "event",
+    name: "MerchantUpdated",
+    inputs: [
+      { name: "owner", type: "address", indexed: true },
+      { name: "merchant", type: "address", indexed: true },
+      { name: "allowed", type: "bool", indexed: false },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "AuditorUpdated",
+    inputs: [
+      { name: "owner", type: "address", indexed: true },
+      { name: "auditor", type: "address", indexed: true },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "TreasuryFunded",
+    inputs: [{ name: "owner", type: "address", indexed: true }],
+    anonymous: false,
+  },
 ] as const;

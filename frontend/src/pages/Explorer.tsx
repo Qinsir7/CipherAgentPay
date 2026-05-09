@@ -12,7 +12,7 @@ type EventRow = {
   merchant?: string;
   paused?: boolean;
   allowed?: boolean;
-  nonce?: bigint;
+  paymentId?: bigint;
 };
 
 const contractAddress = (import.meta.env.VITE_CIPHER_AGENT_PAY_ADDRESS as string) ?? "";
@@ -81,7 +81,7 @@ export default function Explorer() {
             owner: e.args?.owner,
             agent: e.args?.agent,
             merchant: e.args?.merchant,
-            nonce: e.args?.nonce,
+            paymentId: e.args?.paymentId,
           })),
           ...merchant.map((e: any) => ({
             kind: "MerchantUpdated" as const,
@@ -238,7 +238,7 @@ function shorten(address?: string) {
 function detailFor(row: EventRow) {
   switch (row.kind) {
     case "PaymentEvaluated":
-      return `nonce #${row.nonce?.toString() ?? "?"}`;
+      return `payment #${row.paymentId?.toString() ?? "?"}`;
     case "PolicyPaused":
       return row.paused ? "paused" : "resumed";
     case "MerchantUpdated":
