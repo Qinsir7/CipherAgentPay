@@ -269,7 +269,7 @@ We will not ship a competing confidential token — that surface is well covered
 
 ## License
 
-[BSD-3-Clause-Clear](#) (root file). Permissive on purpose — any agent framework, open-source or commercial, can integrate without friction.
+[MIT](./LICENSE). Permissive on purpose — any agent framework, open-source or commercial, can integrate without friction. The Solidity contracts retain `BSD-3-Clause-Clear` SPDX headers because they import Zama's FHEVM library, which requires it.
 
 ---
 

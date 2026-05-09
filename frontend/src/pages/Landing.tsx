@@ -77,6 +77,7 @@ export default function Landing() {
           </div>
 
           <aside className="hero__viz" aria-hidden="true">
+            <img src="/logo-512.png" alt="" className="hero__mark" />
             <div className="viz__card viz__card--policy">
               <span className="viz__chip">policy · encrypted</span>
               <p className="viz__title">Quarterly cap</p>

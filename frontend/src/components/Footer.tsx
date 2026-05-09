@@ -54,7 +54,7 @@ export default function Footer() {
       </div>
       <div className="footer__legal">
         <span>© {new Date().getFullYear()} CipherAgent Pay · Built on Zama FHEVM</span>
-        <span>Open source · BSD-3-Clause-Clear</span>
+        <span>Open source · MIT</span>
       </div>
     </footer>
   );

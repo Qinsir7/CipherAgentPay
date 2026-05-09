@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "The encrypted policy layer for autonomous AI agent treasuries, built on Zama FHEVM.",
-  "license": "BSD-3-Clause-Clear",
+  "license": "MIT",
   "type": "commonjs",
   "scripts": {
     "compile": "hardhat compile",

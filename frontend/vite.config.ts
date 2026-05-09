@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   root: "frontend",
+  envDir: "..",
   plugins: [react()],
   build: {
     outDir: "dist",

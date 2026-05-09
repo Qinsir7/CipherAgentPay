@@ -269,7 +269,7 @@ v1.0     主网 · 第三方审计 · 生产 SDK
 
 ## 许可证
 
-[BSD-3-Clause-Clear](#)（根目录文件）。刻意保持宽松——任何 agent 框架（开源或商业）都能无摩擦集成。
+[MIT](./LICENSE)。刻意保持宽松——任何 agent 框架（开源或商业）都能无摩擦集成。Solidity 合约文件头保留 `BSD-3-Clause-Clear` SPDX 标识，因为它们继承自 Zama FHEVM 库，是 Zama 的合规要求。
 
 ---
 
