@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run frontend:build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": null,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
+      ]
+    }
+  ]
+}
