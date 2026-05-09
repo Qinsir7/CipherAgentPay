@@ -17,17 +17,17 @@ Built on [Zama Protocol](https://www.zama.ai) FHEVM. Live on Ethereum Sepolia.
 
 ## Overview
 
-AI agents are becoming economic actors. They will buy APIs, inference, data, compute, SaaS — and pay each other. Today every agent transaction publishes its budget, its limits, its remaining runway, and its vendor list to the world. That is a strategy leak, a pricing-against-you problem, and a compliance non-starter.
+AI agents are starting to spend money. They buy inference, data, RPC, SaaS, and they will pay each other. The natural thing to do today is hand the agent a hot wallet and a budget — at which point the budget, the running balance, and the vendor list become public. Competitors learn the burn rate. Vendors price against the cap. Compliance can't sign off.
 
-**CipherAgent Pay** is the **encrypted treasury policy layer** for this new class of economic actor. Owners encrypt budgets, per-call caps, and lifetime spend limits in the browser. Agents transact under those rules without the contract or any observer ever learning the plaintext. Auditors decrypt only what they have been explicitly granted access to. The contract is intentionally token-agnostic — it composes above any payment rail.
+**CipherAgent Pay** is the encrypted treasury policy layer for this new class of economic actor. The owner encrypts a budget, a per-call cap, and a lifetime spend limit in the browser. The agent transacts under those rules without the contract or any observer ever learning the plaintext. Auditors decrypt only what they have been explicitly granted. The contract is token-agnostic — it sits above any payment rail.
 
 This is privacy by **selective disclosure via ACL**, not anonymity.
 
 ## Why now
 
-Confidential onchain finance is no longer a thesis. The Zama ecosystem already ships [confidential wallets](https://www.zama.org/ecosystem) (Bron), [private payments](https://www.zama.org/ecosystem) (Raycash, Zaïffer), [confidential auctions](https://www.zama.org/ecosystem) (deBerry's), [privacy-preserving portfolio management](https://www.zama.org/ecosystem) (Orion Finance), and [ERC-7984 confidential token explorers](https://www.zama.org/ecosystem) (Blockscout). Infrastructure partners — OpenZeppelin (ERC-7984 standardisation), Etherscan, Ledger, LayerZero, Fireblocks — make it institution-ready.
+Confidential onchain finance is no longer a thesis. The Zama ecosystem already ships confidential wallets ([Bron](https://bron.org/)), private payment accounts ([Raycash](https://www.raycash.xyz/), [Zaïffer](https://www.zaiffer.org/)), sealed-bid auctions ([deBerry's](https://deberrys.xyz/)), privacy-preserving portfolio management ([Orion Finance](https://www.orionfinance.ai/)), and [ERC-7984 explorer support](https://www.blog.blockscout.com/zama-confidential-tokens-block-explorer/) (Blockscout). Infrastructure partners — OpenZeppelin (ERC-7984 standardisation), Etherscan, Ledger, LayerZero, Fireblocks — make it institution-ready.
 
-Tokens, wallets, and explorers cover the **asset** layer. CipherAgent Pay fills a different gap: the **policy** layer above them. A confidential transfer hides the amount, but the spending rule that authorised it — _"this agent may spend up to $50/call, up to $5,000/month, only with these merchants"_ — still lives in the open on most stacks. CipherAgent Pay encrypts that rule.
+Wallets, tokens, and explorers cover the **asset** layer. CipherAgent Pay fills a different gap: the **policy** layer above them. A confidential transfer hides the amount, but the rule that authorised it — _"this agent may spend up to $50/call, up to $5,000/month, only with these merchants"_ — still lives in the open on most stacks. CipherAgent Pay encrypts that rule.
 
 ## What's novel
 
@@ -35,7 +35,7 @@ Tokens, wallets, and explorers cover the **asset** layer. CipherAgent Pay fills 
 2. **Silent failure at the policy layer.** Over-limit attempts leave exactly the same on-chain footprint as approved payments thanks to `FHE.select(approved, …, untouched)` on every state slot. The balance leak that a plaintext `require(...)` would create is structurally eliminated.
 3. **Per-handle ACL with automatic role detection.** The same UI serves owner, auditor, and merchant. The frontend reads on-chain metadata to determine which role(s) the connected wallet plays and only requests handles that role can decrypt. No partial leaks — an unauthorised wallet gets a clean refusal.
 4. **Token-agnostic composability.** Zero token dependencies in v0.1. Today the policy gates an internal encrypted accounting unit; v0.3's `IConfidentialToken` adapter lets the same contract govern ERC-7984 cUSDC, native ETH, or any future confidential asset without redeployment.
-5. **Encrypted treasury rotation.** `rotatePolicy` lets an owner reset budget cycles (monthly / quarterly) with fresh ciphertexts while preserving the merchant allowlist and auditor grant. Production CFO workflows, not just one-shot demos.
+5. **Encrypted treasury rotation.** `rotatePolicy` lets an owner reset budget cycles (monthly / quarterly) with fresh ciphertexts while preserving the merchant allowlist and auditor grant — so a real CFO workflow doesn't break on cycle boundaries.
 6. **Per-merchant encrypted revenue.** Each vendor decrypts only their own cumulative revenue handle. The owner sees the full breakdown. No two vendors can correlate.
 
 ## Real-world scenarios
@@ -135,7 +135,7 @@ hardhat.config.ts                       viaIR + Cancun EVM
 vercel.json                             SPA deployment + COOP/COEP headers
 ```
 
-That is the whole project. By design.
+That is the whole project.
 
 ## Contract surface
 
@@ -230,7 +230,7 @@ Each assertion is made against actual `userDecryptEuint` / `userDecryptEbool` ou
 
 **What is protected.** Payment amounts, balances, limits, totals, approval booleans, and per-merchant revenue. All `euint64` / `ebool`. Plaintext is reachable only by an address holding an explicit `FHE.allow` grant on the specific ciphertext handle.
 
-**What is not protected.** Participant addresses (required for any meaningful authorisation flow), transaction existence (events drive UX), the merchant allowlist (public policy gate), and the pause flag (owner metadata). These are deliberate design choices.
+**What is not protected.** Participant addresses (any meaningful authorisation flow needs them), transaction existence (events drive UX), the merchant allowlist (a public policy gate), and the pause flag (owner metadata). These are choices, not gaps.
 
 **Key threat mitigations.**
 
@@ -251,26 +251,8 @@ v0.4     Multi-chain (Base, Arbitrum) · enterprise CFO console · Gnosis Safe f
 v1.0     Mainnet · third-party audit · production SDK
 ```
 
-We will not ship a competing confidential token — that surface is well covered by ERC-7984 and the Zama ecosystem. We will not introduce a protocol fee. We will not add an upgradeable proxy. Each new release passes mock tests, on-chain integration smoke tests, and a documentation update before tagging.
-
-## Bounty fit (Zama × OpenBuild)
-
-- **A genuinely new privacy-finance use case.** Encrypting the *spending policy* of an autonomous AI agent — not the asset, not the wallet, not the transfer — is a category none of the existing Zama-ecosystem projects covers. Composes above any payment rail.
-- **Compliance is a feature, not an afterthought.** Selective disclosure via per-handle ACL, first-class auditor role, indexed events for SOC 2 trail reconstruction, and a non-anonymous transaction model that fits FATF / GDPR controller-processor expectations.
-- **Concrete deployment paths.** Four target users (asset manager research desks, DAO ops agents, regulated enterprise AI fleets, multi-tenant SaaS) with the same v0.1 contract. The roadmap from policy primitive → ERC-7984 adapter → enterprise CFO console is direct, not aspirational.
-- **Correct and effective use of Zama tooling.** Eleven FHE primitives in active use (`fromExternal`, `asEuint64`, `asEbool`, `add`, `sub`, `ge`, `le`, `and`, `select`, `allow`, `allowThis`). Frontend uses real `@zama-fhe/relayer-sdk/web` — no mock paths. Tests verify behaviour by user-decrypting actual handles, not by checking function call success.
-- **Mature engineering posture.** `viaIR` + Cancun EVM, custom errors, monotonic payment nonces, no admin keys / upgrade proxy / protocol fee, single-file contract, two production dependencies (`@fhevm/solidity`, `@openzeppelin/contracts`). 8 tests passing in ~600ms.
-- **Developer experience designed for clarity.** One README, two languages, four-line quick start, three-stage UI, automatic role detection so a developer plays owner / agent / merchant from a single wallet. The whole repo can be read in an afternoon.
+Out of scope on purpose: a competing confidential token (ERC-7984 covers it), a protocol fee, an upgradeable proxy, a global admin key. Releases ship after the mock test suite passes, an on-chain smoke test on Sepolia succeeds, and the docs are updated.
 
 ## License
 
-[MIT](./LICENSE). Permissive on purpose — any agent framework, open-source or commercial, can integrate without friction. The Solidity contracts retain `BSD-3-Clause-Clear` SPDX headers because they import Zama's FHEVM library, which requires it.
-
----
-
-<div align="center">
-
-_Privacy is necessary for an open society in the electronic age._  
-— Eric Hughes, 1993
-
-</div>
+[MIT](./LICENSE) for the repository. Use it commercially, fork it, embed it. The Solidity files keep their `BSD-3-Clause-Clear` SPDX headers because they import Zama's FHEVM library, which requires it.

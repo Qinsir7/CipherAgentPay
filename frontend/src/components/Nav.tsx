@@ -7,8 +7,7 @@ export default function Nav() {
         <Link to="/" className="nav__brand">
           <img src="/logo-64.png" alt="" className="nav__logo" width={36} height={36} />
           <span className="nav__brand-text">
-            <strong>CipherAgent</strong>
-            <span>Pay</span>
+            <strong>CipherAgent</strong> Pay
           </span>
         </Link>
 

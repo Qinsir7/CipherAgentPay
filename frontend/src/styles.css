@@ -179,12 +179,16 @@ code, pre {
   object-fit: cover;
 }
 
-.nav__brand-text { display: flex; flex-direction: column; line-height: 1; }
-.nav__brand-text strong { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
-.nav__brand-text span {
-  font-size: 10.5px; color: var(--muted);
-  letter-spacing: 0.22em; text-transform: uppercase; margin-top: 5px;
+.nav__brand-text {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text);
 }
+.nav__brand-text strong { font-weight: 400; font-style: italic; color: var(--mint); }
 
 .nav__links { display: flex; align-items: center; gap: 28px; margin-left: 16px; }
 .nav__link {
@@ -236,7 +240,7 @@ code, pre {
 @media (max-width: 820px) {
   .nav__inner { gap: 16px; padding: 14px 18px; }
   .nav__links { display: none; }
-  .nav__brand-text span { display: none; }
+  .nav__brand-text { font-size: 17px; }
 }
 
 /* ───────── Buttons ───────── */

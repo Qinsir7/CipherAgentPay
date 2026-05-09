@@ -17,17 +17,17 @@
 
 ## 概览
 
-AI agent 正在成为新一类的经济主体——它们要花钱买 API、推理、数据、算力、SaaS，甚至向其他 agent 付费。但今天每一笔 agent 链上交易都把它的预算、限额、剩余资金和供应商列表暴露给全世界。这是策略泄漏，是被精准杀价的风险，是合规化的死局。
+AI agent 正在开始花钱——买推理、数据、RPC、SaaS，将来还会互相付钱。今天最自然的做法是给 agent 一个热钱包加一个预算，但这样一来预算、动态余额、供应商列表全部暴露在链上。竞争对手能看到烧钱速度，供应商按上限报价，合规线根本签不下来。
 
-**CipherAgent Pay** 是为这一类经济主体设计的"加密资金库策略层"。Owner 在浏览器里把预算、单笔上限、累计上限加密；agent 在密文规则下花钱，合约和任何观察者都看不到明文；审计员只能解开 owner 显式授权的字段。合约**有意做成代币无关**——它叠在任何支付轨道之上。
+**CipherAgent Pay** 是为这类新经济主体设计的"加密资金库策略层"。Owner 在浏览器里把预算、单笔上限、累计上限加密；agent 在密文规则下花钱，合约和任何观察者都看不到明文；审计员只能解开 owner 显式授权的字段。合约故意做成代币无关——它叠在任何支付轨道之上。
 
 这是一种通过 ACL 选择性披露的隐私模型，不是匿名。
 
 ## 为什么是现在
 
-机密链上金融已经从概念走入生产。Zama 的[生态目录](https://www.zama.org/ecosystem)里已经有[机密钱包](https://www.zama.org/ecosystem)（Bron）、[私密支付](https://www.zama.org/ecosystem)（Raycash、Zaïffer）、[机密拍卖](https://www.zama.org/ecosystem)（deBerry's）、[隐私组合管理](https://www.zama.org/ecosystem)（Orion Finance）、以及[支持 ERC-7984 机密代币的浏览器](https://www.zama.org/ecosystem)（Blockscout）。基础设施侧的合作方——OpenZeppelin（ERC-7984 标准）、Etherscan、Ledger、LayerZero、Fireblocks——让机构级落地具备可能。
+机密链上金融已经从概念走入生产。Zama 生态里已经有机密钱包（[Bron](https://bron.org/)）、私密支付账户（[Raycash](https://www.raycash.xyz/)、[Zaïffer](https://www.zaiffer.org/)）、密封竞价拍卖（[deBerry's](https://deberrys.xyz/)）、隐私组合管理（[Orion Finance](https://www.orionfinance.ai/)）、以及[支持 ERC-7984 机密代币的浏览器](https://www.blog.blockscout.com/zama-confidential-tokens-block-explorer/)（Blockscout）。基础设施侧的合作方——OpenZeppelin（ERC-7984 标准）、Etherscan、Ledger、LayerZero、Fireblocks——让机构级落地具备可能。
 
-代币、钱包、浏览器覆盖了**资产**那一层。CipherAgent Pay 填的是另一处空白：它们之上的**策略**层。一笔 confidential transfer 可以隐藏金额，但是授权这笔金额的策略——"这个 agent 单次最多 $50，每月最多 $5000，只能付给这几家供应商"——在大多数协议栈里仍然是明文的。CipherAgent Pay 把规则也加密了。
+钱包、代币、浏览器覆盖了**资产**那一层。CipherAgent Pay 填的是另一处空白：它们之上的**策略**层。一笔 confidential transfer 可以隐藏金额，但是授权这笔金额的规则——"这个 agent 单次最多 $50，每月最多 $5000，只能付给这几家供应商"——在大多数协议栈里仍然是明文的。CipherAgent Pay 把规则也加密了。
 
 ## 创新点
 
@@ -35,7 +35,7 @@ AI agent 正在成为新一类的经济主体——它们要花钱买 API、推�
 2. **策略层 silent failure**。每一次状态写入都用 `FHE.select(approved, …, untouched)`，超限尝试在链上留下的写入轨迹与审批通过完全一致，把明文 `require(...)` 会暴露的余额信息从结构上消除。
 3. **Per-handle ACL + 自动角色识别**。同一个 UI 服务 owner、auditor、merchant。前端读链上元数据自动判断当前钱包扮演的角色，只拉对应密文 handle，不存在部分泄漏；未授权钱包得到一个干净的拒绝。
 4. **代币无关的可组合性**。v0.1 不依赖任何代币——策略目前约束一个内部加密会计单位；v0.3 的 `IConfidentialToken` 适配器会让同一份合约直接治理 ERC-7984 cUSDC、原生 ETH 或任何未来的机密资产，不需要重新部署。
-5. **加密资金库轮换**。`rotatePolicy` 让 owner 在每个预算周期（月度 / 季度）用新密文重置限额，同时**保留**商户白名单和 auditor 授权。这是 production 级 CFO 工作流，不是一次性 demo。
+5. **加密资金库轮换**。`rotatePolicy` 让 owner 在每个预算周期（月度 / 季度）用新密文重置限额，同时**保留**商户白名单和 auditor 授权——真实的 CFO 工作流不会在周期边界上崩。
 6. **按商户加密营收**。每个 vendor 只能解密自己的累计营收 handle；owner 看完整明细；任意两个 vendor 之间无法相互关联。
 
 ## 真实使用场景
@@ -135,7 +135,7 @@ hardhat.config.ts                       viaIR + Cancun EVM
 vercel.json                             SPA 部署配置 + COOP/COEP headers
 ```
 
-整个项目就这些。这是有意为之。
+整个项目就这些。
 
 ## 合约接口
 
@@ -230,7 +230,7 @@ npm test
 
 **保护对象。** 支付金额、余额、限额、累计、审批布尔、按商户营收。全部 `euint64` / `ebool`。明文只能被持有具体密文 handle `FHE.allow` 授权的地址读到。
 
-**不保护对象。** 参与者地址（任何有意义的授权流程都需要）、交易存在性（事件驱动 UX）、商户白名单（按设计公开）、暂停标志（owner 元数据）。这些都是有意为之的设计选择。
+**不保护对象。** 参与者地址（任何有意义的授权流程都需要）、交易存在性（事件驱动 UX）、商户白名单（公开的策略门槛）、暂停标志（owner 元数据）。这些是设计选择，不是疏忽。
 
 **关键威胁缓解。**
 
@@ -251,26 +251,8 @@ v0.4     多链（Base、Arbitrum）· 企业级 CFO 控制台 · Gnosis Safe �
 v1.0     主网 · 第三方审计 · 生产 SDK
 ```
 
-我们不会做一个机密代币去重复 ERC-7984 与 Zama 生态的工作。我们不会引入协议费用。我们不会加可升级 proxy。每个新版本必须通过 mock 测试、链上集成 smoke 测试以及文档更新才会打 tag。
-
-## Bounty 适配（Zama × OpenBuild）
-
-- **真正全新的隐私金融场景**。把"自主 AI agent 的支出策略"加密——而不是资产、钱包、转账——是当前 Zama 生态没有项目占位的一格。可组合到任何支付轨道之上。
-- **合规是 feature，不是事后补丁**。Per-handle ACL 选择性披露、一等 auditor 角色、indexed 事件可重建 SOC 2 trail、非匿名交易模型契合 FATF / GDPR controller-processor 期望。
-- **明确的落地路径**。四类目标用户（资管研究台、DAO ops agent、受监管企业 AI fleet、多租户 SaaS）共用同一份 v0.1 合约。从策略原语 → ERC-7984 适配器 → 企业 CFO 控制台的路线图是直接路径，不是空想。
-- **正确且充分使用 Zama 工具**。11 个 FHE 原语在线（`fromExternal`、`asEuint64`、`asEbool`、`add`、`sub`、`ge`、`le`、`and`、`select`、`allow`、`allowThis`）。前端连真实 `@zama-fhe/relayer-sdk/web`——零 mock。测试通过对真实 handle 做用户解密来验证行为，不只是检查函数 return。
-- **成熟的工程姿态**。`viaIR` + Cancun EVM，自定义错误，单调递增 payment nonce，没有管理员 key / 升级 proxy / 协议费用，单文件合约，两个生产依赖（`@fhevm/solidity`、`@openzeppelin/contracts`）。8 个测试约 600ms 通过。
-- **为可读性设计的开发者体验**。一份 README、双语、四行 quick start、三幕 UI、自动角色识别让开发者用一个钱包同时演 owner / agent / merchant。整个仓库一下午能看完。
+明确不做的事：不做与 ERC-7984 重复的机密代币、不引入协议费用、不加可升级 proxy、不留全局管理员 key。每一个版本要在 mock 测试通过、Sepolia 链上 smoke 测试通过、文档同步更新之后才会打 tag。
 
 ## 许可证
 
-[MIT](./LICENSE)。刻意保持宽松——任何 agent 框架（开源或商业）都能无摩擦集成。Solidity 合约文件头保留 `BSD-3-Clause-Clear` SPDX 标识，因为它们继承自 Zama FHEVM 库，是 Zama 的合规要求。
-
----
-
-<div align="center">
-
-_隐私在电子时代是开放社会的必需品。_  
-— Eric Hughes，1993
-
-</div>
+仓库使用 [MIT](./LICENSE) ——可以商用、可以 fork、可以嵌入。Solidity 文件头保留 `BSD-3-Clause-Clear` SPDX 标识，因为它们继承自 Zama FHEVM 库，是 Zama 的合规要求。
