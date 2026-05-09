@@ -32,7 +32,7 @@ export default function Nav() {
 
         <div className="nav__cta">
           <a
-            href="https://github.com/zama-ai/fhevm"
+            href="https://github.com/Qinsir7/CipherAgentPay"
             target="_blank"
             rel="noreferrer"
             className="nav__ghost"
@@ -40,7 +40,7 @@ export default function Nav() {
             GitHub
           </a>
           <NavLink to="/app" className="nav__primary">
-            Launch App
+            Launch Studio
           </NavLink>
         </div>
       </div>

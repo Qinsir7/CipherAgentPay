@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
 
-const contractAddress = (import.meta.env.VITE_CIPHER_AGENT_PAY_ADDRESS as string) ?? "";
-
 export default function Footer() {
   return (
     <footer className="footer">
@@ -13,18 +11,6 @@ export default function Footer() {
           <p className="footer__tagline">
             The encrypted policy layer for autonomous AI agent treasuries.
           </p>
-          {contractAddress && (
-            <p className="footer__contract">
-              Sepolia ·{" "}
-              <a
-                href={`https://sepolia.etherscan.io/address/${contractAddress}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {contractAddress.slice(0, 8)}…{contractAddress.slice(-6)}
-              </a>
-            </p>
-          )}
         </div>
 
         <div className="footer__col">
@@ -37,11 +23,15 @@ export default function Footer() {
         <div className="footer__col">
           <p className="footer__heading">Builders</p>
           <Link to="/developers">SDK</Link>
+          <a
+            href="https://github.com/Qinsir7/CipherAgentPay"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
           <a href="https://docs.zama.ai/protocol" target="_blank" rel="noreferrer">
             Zama Docs
-          </a>
-          <a href="https://github.com/zama-ai/fhevm" target="_blank" rel="noreferrer">
-            FHEVM
           </a>
         </div>
 
@@ -53,7 +43,11 @@ export default function Footer() {
           <a href="https://eips.ethereum.org/EIPS/eip-712" target="_blank" rel="noreferrer">
             EIP-712
           </a>
-          <a href="https://docs.zama.ai/protocol/relayer-sdk-guides" target="_blank" rel="noreferrer">
+          <a
+            href="https://docs.zama.ai/protocol/relayer-sdk-guides"
+            target="_blank"
+            rel="noreferrer"
+          >
             Relayer SDK
           </a>
         </div>

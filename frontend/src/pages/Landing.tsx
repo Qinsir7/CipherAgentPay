@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
 
-const contractAddress = (import.meta.env.VITE_CIPHER_AGENT_PAY_ADDRESS as string) ?? "";
-
 const useCases = [
   {
     persona: "DAO Treasurer",
@@ -11,7 +9,7 @@ const useCases = [
   {
     persona: "AI Ops at a SaaS company",
     title: "Subscription auto-pay with hard ceilings",
-    body: "Agents renew vendors and top up API credits — never above the cap finance agreed to. Anything over the limit is silently rejected on-chain.",
+    body: "Agents renew vendors and top up API credits — never above the cap finance signed off on. Anything over the limit is silently rejected on-chain.",
   },
   {
     persona: "Trading Desk",
@@ -28,18 +26,18 @@ const useCases = [
 const steps = [
   {
     n: "01",
-    title: "Encrypt policy",
-    body: "Owner commits budget, per-payment cap, and total cap as FHE ciphertext. Agent and auditor are bound at the same time.",
+    title: "Encrypt the policy",
+    body: "The owner commits a budget, a per-payment cap, and a total cap as ciphertext. The agent and an optional auditor are bound at the same time.",
   },
   {
     n: "02",
     title: "Agent spends",
-    body: "Amount is encrypted in the browser. The contract runs ge / le / and over ciphertext, updates state on success, leaves it untouched on silent failure.",
+    body: "Each payment amount is encrypted in the browser. The contract checks balance and limits over ciphertext, updates state on success, leaves it untouched on a silent reject.",
   },
   {
     n: "03",
     title: "Selective reveal",
-    body: "Owner and auditor see balance + spend. Merchant decrypts only its own revenue. Everyone else sees nothing on-chain.",
+    body: "The owner and auditor see balance and spend. A merchant decrypts only its own revenue. Anyone else sees nothing on-chain.",
   },
 ];
 
@@ -65,9 +63,8 @@ export default function Landing() {
               not a <em>blank&nbsp;check</em>.
             </h1>
             <p className="hero__lede">
-              CipherAgent Pay is the encrypted policy layer for autonomous agent treasuries.
-              Budgets and limits stay encrypted on-chain. Approvals are computed on ciphertext.
-              Only the right role ever decrypts.
+              CipherAgent Pay lets you set a spending policy your agent must obey —
+              encrypted end-to-end, enforced on-chain, paused in a single transaction.
             </p>
             <div className="hero__cta">
               <Link to="/app" className="btn btn--primary">
@@ -77,18 +74,6 @@ export default function Landing() {
                 See live activity
               </Link>
             </div>
-            {contractAddress && (
-              <a
-                className="hero__contract"
-                href={`https://sepolia.etherscan.io/address/${contractAddress}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="hero__contract-label">Sepolia contract</span>
-                <code>{contractAddress}</code>
-                <span aria-hidden="true">↗</span>
-              </a>
-            )}
           </div>
 
           <aside className="hero__viz" aria-hidden="true">
@@ -113,20 +98,20 @@ export default function Landing() {
       <div className="ticker" aria-hidden="true">
         <div className="ticker__track">
           {[
-            "FHE encrypted at rest, in motion, in compute",
+            "Encrypted at rest, in motion, in compute",
             "Live on Sepolia",
-            "0 leak guarantee on policy breach",
+            "Zero leak on policy breach",
             "Composable with ERC-7984",
-            "EIP-712 per-role userDecrypt",
-            "1-tx pause kill-switch",
+            "EIP-712 per-role decryption",
+            "Single-tx kill switch",
           ]
             .concat([
-              "FHE encrypted at rest, in motion, in compute",
+              "Encrypted at rest, in motion, in compute",
               "Live on Sepolia",
-              "0 leak guarantee on policy breach",
+              "Zero leak on policy breach",
               "Composable with ERC-7984",
-              "EIP-712 per-role userDecrypt",
-              "1-tx pause kill-switch",
+              "EIP-712 per-role decryption",
+              "Single-tx kill switch",
             ])
             .map((item, i) => (
               <span key={i} className="ticker__item">
@@ -141,10 +126,10 @@ export default function Landing() {
           <p className="kicker">Why now</p>
           <h2>Agents are getting wallets faster than guardrails.</h2>
           <p className="why__lede">
-            Public limits are competitive intel. Off-chain controls don't compose with smart
-            contracts. "Just trust the agent" doesn't pass an audit. CipherAgent Pay puts the
-            limits inside the agent's wallet, encrypted, and lets one person stop everything in
-            one transaction.
+            Plaintext spending limits leak strategy to competitors and counterparties.
+            Off-chain controls disappear the moment an agent calls a smart contract.
+            "Just trust the agent" doesn't pass an audit. CipherAgent Pay makes the limits
+            part of the wallet itself — encrypted, enforced on-chain, revocable in one tap.
           </p>
         </div>
       </section>
@@ -168,7 +153,7 @@ export default function Landing() {
       <section id="use-cases" className="cases">
         <div className="section__head">
           <p className="kicker">Built for</p>
-          <h2>The four people most exposed to agents in finance.</h2>
+          <h2>The teams most exposed to autonomous spend.</h2>
         </div>
         <div className="cases__grid">
           {useCases.map((c) => (
@@ -186,8 +171,9 @@ export default function Landing() {
           <p className="kicker">For builders</p>
           <h2>Five lines from any agent runtime.</h2>
           <p>
-            Drop the SDK into LangGraph, AgentKit, Temporal, or anything with an ethers signer.
-            Set policies, request payments, and decrypt scoped views with typed, awaitable calls.
+            Drop the SDK into LangGraph, AgentKit, Temporal, or anything with an ethers
+            signer. Set a policy, request a payment, decrypt a scoped view — all typed,
+            all awaitable, all Sepolia-ready.
           </p>
           <Link to="/developers" className="btn btn--primary btn--sm">
             Open developer guide →
@@ -197,7 +183,7 @@ export default function Landing() {
           <code>{`import { CipherAgentClient } from "cipher-agent-pay";
 
 const client = await CipherAgentClient.connect({
-  contract: "${contractAddress || "0x…"}",
+  contract,
   signer,
 });
 
