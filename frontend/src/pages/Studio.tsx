@@ -1,18 +1,14 @@
 import { createInstance, initSDK, SepoliaConfig, type FhevmInstance } from "@zama-fhe/relayer-sdk/web";
 import { BrowserProvider, Contract, hexlify, isAddress } from "ethers";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { cipherAgentPayAbi } from "../cipherAgentPayAbi";
-
-type Eip1193Provider = {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-};
-
-declare global {
-  interface Window {
-    ethereum?: Eip1193Provider;
-  }
-}
+import {
+  legacyInjectedProvider,
+  useInjectedWallets,
+  type Eip1193Provider,
+  type Eip6963ProviderDetail,
+} from "../lib/wallets";
 
 type AgentState = {
   agent: string;
@@ -44,16 +40,32 @@ export default function Studio() {
   const [isBusy, setIsBusy] = useState(false);
   const [fhevm, setFhevm] = useState<FhevmInstance | null>(null);
   const [activeTab, setActiveTab] = useState<RoleTab>("owner");
+  const wallets = useInjectedWallets();
+  const [selectedWallet, setSelectedWallet] = useState<Eip6963ProviderDetail | null>(null);
+  const [showWalletPicker, setShowWalletPicker] = useState(false);
+  const providerRef = useRef<Eip1193Provider | null>(null);
+
+  useEffect(() => {
+    if (selectedWallet) providerRef.current = selectedWallet.provider;
+  }, [selectedWallet]);
 
   const isConfigured = useMemo(() => isAddress(contractAddress), []);
 
+  function getInjected(): Eip1193Provider {
+    const eth = providerRef.current ?? legacyInjectedProvider();
+    if (!eth) {
+      throw new Error("No injected wallet found. Install MetaMask, Rainbow, Coinbase Wallet, or any EIP-1193 wallet.");
+    }
+    return eth;
+  }
+
   async function getSignerContract() {
-    if (!window.ethereum) throw new Error("No injected wallet found.");
     if (!isConfigured) throw new Error("Set VITE_CIPHER_AGENT_PAY_ADDRESS after deploying the contract.");
 
-    const provider = new BrowserProvider(window.ethereum);
+    const eth = getInjected();
+    const provider = new BrowserProvider(eth);
     const network = await provider.getNetwork();
-    if (network.chainId !== sepoliaChainId) await switchToSepolia();
+    if (network.chainId !== sepoliaChainId) await switchToSepolia(eth);
 
     const signer = await provider.getSigner();
     const signerAddress = await signer.getAddress();
@@ -66,21 +78,27 @@ export default function Studio() {
 
   async function getFhevm() {
     if (fhevm) return fhevm;
-    if (!window.ethereum) throw new Error("No injected wallet found.");
+    const eth = getInjected();
 
     setStatus("Initializing Zama relayer SDK...");
     await initSDK();
-    const instance = await createInstance({ ...SepoliaConfig, network: window.ethereum });
+    const instance = await createInstance({ ...SepoliaConfig, network: eth });
     setFhevm(instance);
     return instance;
   }
 
-  async function connectWallet() {
+  async function connectWith(detail: Eip6963ProviderDetail) {
+    setSelectedWallet(detail);
+    providerRef.current = detail.provider;
+    setShowWalletPicker(false);
+    await connectInternal(detail.provider);
+  }
+
+  async function connectInternal(eth: Eip1193Provider) {
     try {
-      if (!window.ethereum) throw new Error("Install MetaMask or another injected wallet.");
-      const provider = new BrowserProvider(window.ethereum);
+      const provider = new BrowserProvider(eth);
       const network = await provider.getNetwork();
-      if (network.chainId !== sepoliaChainId) await switchToSepolia();
+      if (network.chainId !== sepoliaChainId) await switchToSepolia(eth);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
       setAccount(address);
@@ -101,6 +119,26 @@ export default function Studio() {
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Wallet connection failed.");
     }
+  }
+
+  async function connectWallet() {
+    if (wallets.length === 0) {
+      const legacy = legacyInjectedProvider();
+      if (!legacy) {
+        setStatus("No browser wallet detected. Install MetaMask or another EIP-1193 wallet.");
+        return;
+      }
+      providerRef.current = legacy;
+      await connectInternal(legacy);
+      return;
+    }
+
+    if (wallets.length === 1) {
+      await connectWith(wallets[0]);
+      return;
+    }
+
+    setShowWalletPicker(true);
   }
 
   async function runAction(action: () => Promise<void>) {
@@ -336,6 +374,24 @@ export default function Studio() {
           <button onClick={connectWallet} disabled={isBusy} className="btn btn--primary btn--sm">
             {account ? shortAddress(account) : "Connect Sepolia wallet"}
           </button>
+          {selectedWallet && (
+            <span className="studio__wallet-badge" title={`Connected via ${selectedWallet.info.name}`}>
+              {selectedWallet.info.icon ? (
+                <img src={selectedWallet.info.icon} alt="" width={14} height={14} />
+              ) : null}
+              <span>{selectedWallet.info.name}</span>
+              {wallets.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setShowWalletPicker(true)}
+                  className="studio__wallet-switch"
+                  title="Switch wallet"
+                >
+                  switch
+                </button>
+              )}
+            </span>
+          )}
           {isConfigured && (
             <a
               href={`https://sepolia.etherscan.io/address/${contractAddress}`}
@@ -348,6 +404,35 @@ export default function Studio() {
           )}
         </div>
       </header>
+
+      {showWalletPicker && (
+        <div className="wallet-picker" role="dialog" aria-modal="true" onClick={() => setShowWalletPicker(false)}>
+          <div className="wallet-picker__panel" onClick={(e) => e.stopPropagation()}>
+            <header>
+              <h2>Choose a wallet</h2>
+              <p>{wallets.length} EIP-6963 wallets discovered in this browser.</p>
+            </header>
+            <ul>
+              {wallets.map((wallet) => (
+                <li key={wallet.info.uuid}>
+                  <button type="button" onClick={() => connectWith(wallet)} className="wallet-picker__item">
+                    {wallet.info.icon ? (
+                      <img src={wallet.info.icon} alt="" width={28} height={28} />
+                    ) : (
+                      <span className="wallet-picker__placeholder">{wallet.info.name.slice(0, 1)}</span>
+                    )}
+                    <span className="wallet-picker__name">{wallet.info.name}</span>
+                    <span className="wallet-picker__rdns">{wallet.info.rdns}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={() => setShowWalletPicker(false)} className="wallet-picker__close">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="kpi">
         <Stat label="Wallet" value={account ? shortAddress(account) : "—"} />
@@ -524,13 +609,12 @@ function Field({
 const zeroHandle = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const zeroAddress = "0x0000000000000000000000000000000000000000";
 
-async function switchToSepolia() {
-  const ethereum = window.ethereum as { request?: (args: { method: string; params?: unknown[] }) => Promise<unknown> };
-  if (!ethereum?.request) throw new Error("Wallet does not support network switching.");
+async function switchToSepolia(eth: Eip1193Provider) {
+  if (!eth?.request) throw new Error("Wallet does not support network switching.");
   try {
-    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xaa36a7" }] });
+    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xaa36a7" }] });
   } catch {
-    await ethereum.request({
+    await eth.request({
       method: "wallet_addEthereumChain",
       params: [
         {

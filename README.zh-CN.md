@@ -115,14 +115,24 @@ account.lastPaymentApproved  = approved;
 ## 仓库结构
 
 ```text
-contracts/CipherAgentPay.sol      策略层（约 250 行，单合约）
-test/CipherAgentPay.ts            8 个 hardhat 测试 · FHEVM mock 运行时
-scripts/deploy.ts                 Sepolia 部署
-frontend/                         React + Vite demo
-├── src/App.tsx                   三幕流程：Owner → Agent → Disclosure
-├── src/styles.css                编辑式深色主题
-└── src/cipherAgentPayAbi.ts      强类型 ABI
-hardhat.config.ts                 viaIR + Cancun EVM
+contracts/CipherAgentPay.sol            策略层（约 330 行，单合约）
+test/CipherAgentPay.ts                  8 个 hardhat 测试 · FHEVM mock 运行时
+scripts/deploy.ts                       Sepolia 部署
+frontend/                               React 19 + Vite 多页产品
+├── src/main.tsx                        React Router 路由
+├── src/App.tsx                         全局 layout（Nav + Outlet + Footer）
+├── src/components/Nav.tsx              顶部导航
+├── src/components/Footer.tsx           页脚
+├── src/pages/Landing.tsx               官网首页（hero / why / how / cases / dev CTA）
+├── src/pages/Studio.tsx                控制台仪表盘（角色 tab：owner / agent / disclosure）
+├── src/pages/Explorer.tsx              链上活动浏览器（queryFilter on Sepolia）
+├── src/pages/Developers.tsx            SDK 文档（左侧 sticky 导航）
+├── src/lib/cipher-agent-client.ts      可复用 TypeScript SDK
+├── src/cipherAgentPayAbi.ts            强类型 ABI 子集
+└── src/styles.css                      编辑式深色主题 · Instrument Serif 字体
+examples/agentkit-spend-agent.ts        Headless Node 示例 agent
+hardhat.config.ts                       viaIR + Cancun EVM
+vercel.json                             SPA 部署配置 + COOP/COEP headers
 ```
 
 整个项目就这些。这是有意为之。
@@ -152,8 +162,8 @@ hardhat.config.ts                 viaIR + Cancun EVM
 需要 Node.js 20 LTS（Hardhat 2 不支持奇数版本号的 Node）。
 
 ```sh
-git clone <本仓库> cipher-agent-pay && cd cipher-agent-pay
-npm install
+git clone https://github.com/Qinsir7/CipherAgentPay && cd CipherAgentPay
+npm install --legacy-peer-deps
 npm run compile
 npm test            # 8 个测试 · FHEVM mock · 约 600ms
 ```
@@ -172,35 +182,20 @@ export PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
 npm run deploy:sepolia
 ```
 
-## 前端流程
+## 产品形态
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  HERO   Pay like a private CFO.                                  │
-│         [ Connect Sepolia wallet ] [ Sepolia · Zama Relayer ]    │
-├─────────────────────────────────────────────────────────────────┤
-│  STATUS · 等宽单行，绿 / 橙圆点                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  01  Owner       │ Encrypt the spending policy.                  │
-│  OWNER           │ agent · merchant · auditor · budget · 限额    │
-│                  │ [ Encrypt policy ] [ Pause / Resume ]         │
-├──────────────────┼───────────────────────────────────────────────┤
-│  02  Agent       │ Spend without revealing.                      │
-│  AGENT           │ owner · 加密金额                              │
-│                  │ [ Submit encrypted payment ]                  │
-├──────────────────┼───────────────────────────────────────────────┤
-│  03  Disclosure  │ Decrypt only what your role allows.           │
-│  DISCLOSURE      │ [ Decrypt my view ]                           │
-│                  │ ┌──────────────────────────────────────────┐  │
-│                  │ │ balance              488                 │  │
-│                  │ │ total spent           12                 │  │
-│                  │ │ last payment          12                 │  │
-│                  │ │ last payment status   approved           │  │
-│                  │ └──────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
+前端是一个四页 React 应用：
 
-"Decrypt my view" 按钮会读取链上元数据，自动判断当前钱包扮演的角色（owner / auditor / merchant / 多重身份），只拉对应密文 handle，构造 EIP-712 用户解密信封并签名，由 Zama relayer 解出明文。商户用同一 UI 连接钱包只能看到自己的营收；未授权钱包会得到一个干净的拒绝，绝不会出现部分泄漏。
+| 路由 | 用途 |
+| --- | --- |
+| `/` | 官网首页——hero 动效 cipher mark、问题陈述、三步流程、四类目标用户、SDK 预览 |
+| `/app` | Studio 控制台——KPI 概览 + 角色 tab（Owner / Agent / Disclosure），同一钱包切换视角 |
+| `/explorer` | 链上活动浏览器——一键查询 Sepolia 上的事件（`PolicyCreated`、`PaymentEvaluated`、`PolicyRotated`、`PolicyPaused`、`MerchantUpdated`、`TreasuryFunded`）|
+| `/developers` | SDK 文档——install、connect、set policy、fund、request payment、decrypt scoped view、indexed events |
+
+Studio 里的 "Decrypt my view" 会读取链上元数据，自动判断当前钱包扮演的角色（owner / auditor / merchant / 多重身份），只拉对应密文 handle，构造 EIP-712 用户解密信封并签名，由 Zama relayer 解出明文。商户用同一 UI 连接钱包只能看到自己的营收；未授权钱包会得到一个干净的拒绝，绝不会出现部分泄漏。
+
+Explorer 流式展示合约对外暴露的公开事件——这些事件本身不携带任何金额。同一份数据可以无缝接入 Datadog dashboard、The Graph subgraph 或 SOC 2 审计日志。
 
 ## 测试
 

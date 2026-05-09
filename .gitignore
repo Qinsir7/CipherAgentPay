@@ -8,3 +8,6 @@ fhevmTemp/
 .env
 .env.local
 npm-debug.log*
+.DS_Store
+*.log
+.vercel/

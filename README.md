@@ -115,14 +115,24 @@ Zero plaintext is ever exposed. The "silent failure" pattern — `FHE.select(app
 ## Repository
 
 ```text
-contracts/CipherAgentPay.sol      The policy layer (~250 LOC, 1 contract)
-test/CipherAgentPay.ts            8 hardhat tests · FHEVM mock runtime
-scripts/deploy.ts                 Sepolia deployment
-frontend/                         React + Vite demo
-├── src/App.tsx                   3-stage flow: Owner → Agent → Disclosure
-├── src/styles.css                Editorial dark theme
-└── src/cipherAgentPayAbi.ts      Typed ABI subset
-hardhat.config.ts                 viaIR + Cancun EVM
+contracts/CipherAgentPay.sol            The policy layer (~330 LOC, 1 contract)
+test/CipherAgentPay.ts                  8 hardhat tests · FHEVM mock runtime
+scripts/deploy.ts                       Sepolia deployment
+frontend/                               React 19 + Vite multi-page product
+├── src/main.tsx                        React Router routes
+├── src/App.tsx                         Layout shell (Nav + Outlet + Footer)
+├── src/components/Nav.tsx              Top navigation
+├── src/components/Footer.tsx           Footer
+├── src/pages/Landing.tsx               Marketing page (hero / why / how / cases / dev CTA)
+├── src/pages/Studio.tsx                Dashboard with role tabs (owner / agent / disclosure)
+├── src/pages/Explorer.tsx              Live on-chain activity feed (queryFilter on Sepolia)
+├── src/pages/Developers.tsx            SDK guide with sticky-nav docs
+├── src/lib/cipher-agent-client.ts      Reusable TypeScript SDK
+├── src/cipherAgentPayAbi.ts            Typed ABI subset
+└── src/styles.css                      Editorial dark theme · Instrument Serif display
+examples/agentkit-spend-agent.ts        Headless Node agent using the SDK
+hardhat.config.ts                       viaIR + Cancun EVM
+vercel.json                             SPA deployment + COOP/COEP headers
 ```
 
 That is the whole project. By design.
@@ -152,8 +162,8 @@ Events: `PolicyCreated`, `PolicyRotated`, `PolicyPaused`, `MerchantUpdated`, `Au
 Requires Node.js 20 LTS (Hardhat 2 does not support odd-numbered Node releases).
 
 ```sh
-git clone <this-repo> cipher-agent-pay && cd cipher-agent-pay
-npm install
+git clone https://github.com/Qinsir7/CipherAgentPay && cd CipherAgentPay
+npm install --legacy-peer-deps
 npm run compile
 npm test            # 8 tests · FHEVM mock runtime · ~600ms
 ```
@@ -172,35 +182,20 @@ export PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
 npm run deploy:sepolia
 ```
 
-## Frontend flow
+## Frontend
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  HERO   Pay like a private CFO.                                  │
-│         [ Connect Sepolia wallet ] [ Sepolia · Zama Relayer ]    │
-├─────────────────────────────────────────────────────────────────┤
-│  STATUS · monospace single line, green / orange dot              │
-├─────────────────────────────────────────────────────────────────┤
-│  01  Owner       │ Encrypt the spending policy.                  │
-│  OWNER           │ agent · merchant · auditor · budget · caps    │
-│                  │ [ Encrypt policy ] [ Pause / Resume ]         │
-├──────────────────┼───────────────────────────────────────────────┤
-│  02  Agent       │ Spend without revealing.                      │
-│  AGENT           │ owner · encrypted amount                      │
-│                  │ [ Submit encrypted payment ]                  │
-├──────────────────┼───────────────────────────────────────────────┤
-│  03  Disclosure  │ Decrypt only what your role allows.           │
-│  DISCLOSURE      │ [ Decrypt my view ]                           │
-│                  │ ┌──────────────────────────────────────────┐  │
-│                  │ │ balance              488                 │  │
-│                  │ │ total spent           12                 │  │
-│                  │ │ last payment          12                 │  │
-│                  │ │ last payment status   approved           │  │
-│                  │ └──────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
+The product surface is a four-page React app:
 
-The "Decrypt my view" button reads on-chain metadata, auto-detects the connected wallet's role (owner, auditor, merchant, or any combination), requests only the matching ciphertext handles, and signs an EIP-712 user-decryption envelope to the Zama relayer. A merchant connecting with the same UI sees only their own revenue. An unauthorised wallet receives a clean refusal — never a partial leak.
+| Route | Purpose |
+| --- | --- |
+| `/` | Marketing landing — hero with animated cipher mark, problem framing, three-step flow, four target personas, SDK preview |
+| `/app` | Studio dashboard — KPI strip + role tabs (Owner / Agent / Disclosure) on top of one connected wallet |
+| `/explorer` | Live on-chain trail — queries Sepolia events (`PolicyCreated`, `PaymentEvaluated`, `PolicyRotated`, `PolicyPaused`, `MerchantUpdated`, `TreasuryFunded`) with one click |
+| `/developers` | SDK guide — install, connect, set policy, fund, request payment, decrypt scoped view, indexed events |
+
+Studio's "Decrypt my view" reads on-chain metadata, auto-detects the connected wallet's role (owner, auditor, merchant, or any combination), requests only the matching ciphertext handles, and signs an EIP-712 user-decryption envelope to the Zama relayer. A merchant connecting with the same UI sees only their own revenue. An unauthorised wallet receives a clean refusal — never a partial leak.
+
+Explorer streams the public, plaintext-safe events emitted by the contract — none of them leak amounts. The same data feeds a Datadog dashboard, a Graph subgraph, or a SOC 2 audit log without further work.
 
 ## Tests
 
