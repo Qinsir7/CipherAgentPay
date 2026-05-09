@@ -22,8 +22,9 @@ export default function Nav() {
           <NavLink to="/" end className={({ isActive }) => `nav__link ${isActive ? "is-active" : ""}`}>
             Protocol
           </NavLink>
-          <a href="/#use-cases" className="nav__link">Use cases</a>
-          <a href="/#architecture" className="nav__link">Architecture</a>
+          <NavLink to="/explorer" className={({ isActive }) => `nav__link ${isActive ? "is-active" : ""}`}>
+            Explorer
+          </NavLink>
           <NavLink to="/developers" className={({ isActive }) => `nav__link ${isActive ? "is-active" : ""}`}>
             Developers
           </NavLink>

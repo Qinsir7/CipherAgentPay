@@ -31,7 +31,7 @@ export default function Footer() {
           <p className="footer__heading">Product</p>
           <Link to="/">Protocol</Link>
           <Link to="/app">Studio</Link>
-          <a href="/#use-cases">Use cases</a>
+          <Link to="/explorer">Explorer</Link>
         </div>
 
         <div className="footer__col">
